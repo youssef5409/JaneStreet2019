@@ -119,7 +119,7 @@ public class BotTrader {
 
     private int readData() {
 
-
+        System.out.println(data);
         int bookIndex = data.indexOf("BOOK");
 
         if (bookIndex != -1) {
