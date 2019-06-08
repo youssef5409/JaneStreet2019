@@ -55,15 +55,13 @@ public class BotTrader {
     List<Integer> sellPrices = new ArrayList<>();
     List<Integer> sellSize = new ArrayList<>();
 
-<<<<<<< HEAD
-=======
+
     Map<String, Float> fairValues = new HashMap<>();
 
     int maxBid;
     int minAsk;
 
     float fairV;
->>>>>>> 81e490217d0ebeabe11dd13c5b4985bdcd33b131
 
     String symbol;
 
@@ -72,7 +70,31 @@ public class BotTrader {
     private String data;
 
     public BotTrader() {
+
         initConnection(isTesting);
+    }
+
+    private void initConnection(boolean testMode) {
+
+        Configuration config = new Configuration(testMode);
+
+        try {
+            Socket skt = new Socket(config.exchange_name(), config.port());
+            from_exchange = new BufferedReader(new InputStreamReader(skt.getInputStream()));
+            to_exchange = new PrintWriter(skt.getOutputStream(), true);
+
+            /*
+              A common mistake people make is to to_exchange.println() > 1
+              time for every from_exchange.readLine() response.
+              Since many write messages generate marketdata, this will cause an
+              exponential explosion in pending messages. Please, don't do that!
+             */
+            to_exchange.println(("HELLO " + config.team_name));
+            String reply = from_exchange.readLine().trim();
+            System.err.printf("The exchange replied: %s\n", reply);
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        }
     }
 
     public static void main(String[] args) {
@@ -172,7 +194,6 @@ public class BotTrader {
 
     }
 
-<<<<<<< HEAD
     private void bondStrat() {
         if (!sellPrices.isEmpty() || !sellSize.isEmpty()) {
             for (int ask : sellPrices) {
@@ -181,73 +202,27 @@ public class BotTrader {
                 }
 
                 String send = "ADD " + orderID + " " + "BOND" + " BUY " + ask + " " + sellSize.get(sellPrices.indexOf(ask));
-=======
-    private void buy(float fair) {
-
-        for (int ask : sellPrices) {
-            if (ask < fair) {
-                String send = "ADD " + orderID + " " + symbol + " BUY " + ask + " " + sellSize.get(sellPrices.indexOf(ask));
->>>>>>> 81e490217d0ebeabe11dd13c5b4985bdcd33b131
                 System.out.println("Sending: " + send);
                 to_exchange.println(send);
                 orderID++;
-            }
-        }
-<<<<<<< HEAD
-
-        if (!buyPrices.isEmpty() || !buySize.isEmpty()) {
-            for (int bid : buyPrices) {
-                if (bid <= 1000) {
-                    break;
-                }
-
-                String send = "ADD " + orderID + " " + "BOND" + " SELL " + bid + " " + buySize.get(buyPrices.indexOf(bid));
-                System.out.println("Sending: " + send);
-                to_exchange.println(send);
-                orderID++;
-            }
-        }
-    }
-
-    private void buy(float fair) {
-
-        if (!sellPrices.isEmpty() || !sellSize.isEmpty()) {
-            for (int ask : sellPrices) {
-                if (ask >= fair) {
-                    break;
-                }
-
-                String send = "ADD " + orderID + " " + symbol + " BUY " + ask + " " + sellSize.get(sellPrices.indexOf(ask));
-                System.out.println("Sending: " + send);
-                to_exchange.println(send);
-                orderID++;
-            }
-        }
 
 
+                if (!buyPrices.isEmpty() || !buySize.isEmpty()) {
+                    for (int bid : buyPrices) {
+                        if (bid <= 1000) {
+                            break;
+                        }
 
-    }
-
-    private void sell(float fair) {
-
-
-=======
-    }
-
-    private void sell(float fair) {
-
-        if (!buyPrices.isEmpty() || !buySize.isEmpty()) {
-            for (int bid : buyPrices) {
-                if (bid > fair) {
-                    String send = "ADD " + orderID + " " + symbol + " SELL " + bid + " " + buySize.get(buyPrices.indexOf(bid));
-                    System.out.println("Sending: " + send);
-                    to_exchange.println(send);
-                    orderID++;
+                        send = "ADD " + orderID + " " + "BOND" + " SELL " + bid + " " + buySize.get(buyPrices.indexOf(bid));
+                        System.out.println("Sending: " + send);
+                        to_exchange.println(send);
+                        orderID++;
+                    }
                 }
             }
         }
->>>>>>> 81e490217d0ebeabe11dd13c5b4985bdcd33b131
     }
+
 
     private float calcFairValue(String type) {
         if (!buyPrices.isEmpty() && !sellPrices.isEmpty()) {
@@ -283,26 +258,6 @@ public class BotTrader {
         return (float) (maxBid + minAsk) / 2;
     }
 
-    private void initConnection(boolean testMode) {
 
-        Configuration config = new Configuration(testMode);
-
-        try {
-            Socket skt = new Socket(config.exchange_name(), config.port());
-            from_exchange = new BufferedReader(new InputStreamReader(skt.getInputStream()));
-            to_exchange = new PrintWriter(skt.getOutputStream(), true);
-
-            /*
-              A common mistake people make is to to_exchange.println() > 1
-              time for every from_exchange.readLine() response.
-              Since many write messages generate marketdata, this will cause an
-              exponential explosion in pending messages. Please, don't do that!
-             */
-            to_exchange.println(("HELLO " + config.team_name));
-            String reply = from_exchange.readLine().trim();
-            System.err.printf("The exchange replied: %s\n", reply);
-        } catch (Exception e) {
-            e.printStackTrace(System.out);
-        }
-    }
 }
+
