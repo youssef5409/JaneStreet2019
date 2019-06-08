@@ -234,9 +234,11 @@ public class BotTrader {
 
                 data = from_exchange.readLine().trim();
 
-                if (parser() == -1) {
-                    return;
-                }
+                System.out.println(parser());
+
+                //if (parser() == -1) {
+                  //  return;
+                //}
 
                 float calcXLF = etfFairV();
                 System.out.println(calcXLF);
