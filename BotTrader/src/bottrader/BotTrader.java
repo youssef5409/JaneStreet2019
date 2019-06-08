@@ -50,7 +50,11 @@ public class BotTrader {
 
     boolean isTesting = true;
 
-    List<Integer> buyPrices, buySize, sellPrices, sellSize;
+    List<Integer> buyPrices = new ArrayList<>();
+    List<Integer> buySize = new ArrayList<>();
+    List<Integer> sellPrices = new ArrayList<>();
+    List<Integer> sellSize = new ArrayList<>();
+
 
     Map<String, Float> fairValues = new HashMap<>();
 
