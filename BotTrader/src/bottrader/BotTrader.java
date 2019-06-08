@@ -44,14 +44,27 @@ class Configuration {
 
 public class BotTrader {
 
+    public BotTrader() {
+        initConnection(true);
+    }
+
     public static void main(String[] args) {
         /* The boolean passed to the Configuration constructor dictates whether or not the
            bot is connecting to the prod or test exchange. Be careful with this switch! */
+        BotTrader bot = new BotTrader();
+
+        while (true) {
+            bot.trade();
+        }
     }
 
-    void initConnection() {
+    public void trade() {
 
-        Configuration config = new Configuration(true);
+    }
+
+    private void initConnection(boolean testMode) {
+
+        Configuration config = new Configuration(testMode);
 
         try {
             Socket skt = new Socket(config.exchange_name(), config.port());
@@ -64,7 +77,7 @@ public class BotTrader {
               Since many write messages generate marketdata, this will cause an
               exponential explosion in pending messages. Please, don't do that!
              */
-            to_exchange.println(("HELLO " + config.team_name).toUpperCase());
+            to_exchange.println(("HELLO " + config.team_name));
             String reply = from_exchange.readLine().trim();
             System.err.printf("The exchange replied: %s\n", reply);
         } catch (Exception e) {
