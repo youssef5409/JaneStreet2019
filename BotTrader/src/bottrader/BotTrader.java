@@ -99,12 +99,16 @@ public class BotTrader {
 
         if (bookIndex != -1) {
             int buyIndex = data.indexOf("BUY");
+            System.out.println(buyIndex);
             int sellIndex = data.indexOf("SELL");
+            System.out.println(sellIndex);
 
             symbol = data.substring(bookIndex + 5, buyIndex - 1);
 
+            System.out.println(symbol);
+
             if (!(sellIndex - bookIndex < 4)) {
-                parseInfo(data.substring(buyIndex + 4, sellIndex - 1), buyPrices, buySize);
+                parseInfo(data.substring(buyIndex + 4, sellIndex), buyPrices, buySize);
             }
 
             if (sellIndex + 4 != data.length()) {
