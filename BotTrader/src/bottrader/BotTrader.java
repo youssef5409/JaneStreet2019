@@ -58,8 +58,6 @@ public class BotTrader {
 
     float fairV;
 
-    String symbol;
-
     private String data;
 
 
@@ -84,96 +82,76 @@ public class BotTrader {
         sellSize.clear();
     }
 
-    private void readData() {
+
+    private String readData() {
         int bookIndex = data.indexOf("BOOK");
 
         if (bookIndex != -1) {
             int buyIndex = data.indexOf("BUY");
             int sellIndex = data.indexOf("SELL");
 
-            symbol = data.substring(buyIndex + 5, sellIndex - 1);
-
-            String buyInfo = ;
+            String symbol = data.substring(buyIndex + 5, sellIndex - 1);
 
             if (!(sellIndex - bookIndex < 4)) {
-
+                parseInfo(data.substring(buyIndex + 4, sellIndex - 1), buyPrices, buySize);
             }
 
-            if (sellIndex + 4 != data.length()) {
-                parseInfo();
-            }
-
-            String sellTemp = "";
-            List<Integer> sellData = new ArrayList<Integer>();
             if (sellIndex + 4 != data.length()) {
                 String sellInfo = data.substring(sellIndex + 5);
 
                 if (sellInfo.length() > 0) {
-                    for (int i = 0; i < sellInfo.length(); i++) {
-                        if (sellInfo.charAt(i) == ':' || sellInfo.charAt(i) == ' ') {
-                            sellData.add(Integer.parseInt(sellTemp));
-                            sellTemp = "";
-                        } else {
-                            sellTemp += sellInfo.charAt(i);
-                        }
-                    }
-                    sellData.add(Integer.parseInt(sellTemp));
-                    //System.out.println("sellData: " + sellData);
-                    for (int i = 0; i < sellData.size(); i++) {
-                        if (i % 2 == 0) {
-                            sellPrice.add(sellData.get(i));
-                        } else {
-                            sellAmount.add(sellData.get(i));
-                        }
-                    }
+                    parseInfo(sellInfo, sellPrices, sellSize);
                 }
             }
+            return symbol;
         }
 
-
-
+        return "Error";
     }
 
-    private void parseInfo(String buyInfo) {
+    private void parseInfo(String info, List<Integer> prices, List<Integer> size) {
 
+        String temp = "";
 
-        if (!(sellIndex - bookIndex < 4)) {
-            String buyTemp = "";
+        List<Integer> tempData = new ArrayList<>();
 
-            List<Integer> buyData = new ArrayList<>();
-
-
-            for (int i = 0; i < buyInfo.length(); i++) {
-                if (buyInfo.charAt(i) == ':' || buyInfo.charAt(i) == ' ') {
-                    buyData.add(Integer.parseInt(buyTemp));
-                    buyTemp = "";
-                } else {
-                    buyTemp += buyInfo.charAt(i);
-                }
-
-            }
-            buyData.add(Integer.parseInt(buyTemp));
-
-            for (int i = 0; i < buyData.size(); i++) {
-                if (i % 2 == 0) {
-                    buyPrices.add(buyData.get(i));
-                } else {
-                    buySize.add(buyData.get(i));
-                }
+        for (int i = 0; i < info.length(); i++) {
+            if (info.charAt(i) == ':' || info.charAt(i) == ' ') {
+                tempData.add(Integer.parseInt(temp));
+                temp = "";
+            } else {
+                temp += info.charAt(i);
             }
 
         }
+        tempData.add(Integer.parseInt(temp));
+
+        for (int i = 0; i < tempData.size(); i++) {
+            if (i % 2 == 0) {
+                prices.add(tempData.get(i));
+            } else {
+                size.add(tempData.get(i));
+            }
+        }
+
     }
+
 
     public void trade() {
         try {
+            String symbol;
             while (true) {
 
                 clearData();
 
                 data = from_exchange.readLine().trim();
 
-                readData();
+                symbol = readData();
+
+                fairV = calcFairValue(symbol);
+
+                
+
 
             }
 
@@ -184,23 +162,25 @@ public class BotTrader {
 
     }
 
-    private float calcFairValue(int type) {
+    private float calcFairValue(String type) {
         if (!buyPrices.isEmpty() && !sellPrices.isEmpty())
             switch (type) {
-                case 0:
+                case "BOND":
                     return 1000;
-                case 1: //VALBZ
+                case "VALBZ":
                     return simpleFairValue();
-                case 2: // VALE
+                case "VALE":
                     return simpleFairValue();
-                case 3: //GS
+                case "GS": //GS
                     return simpleFairValue();
-                case 4: // MS
+                case "MS": // MS
                     return simpleFairValue();
-                case 5:
+                case "WFC":
                     return simpleFairValue();
-                case 6:
+                case "XLF":
                     return simpleFairValue();
+                case "Error":
+                    return -1;
                 default:
                     return -1;
             }
