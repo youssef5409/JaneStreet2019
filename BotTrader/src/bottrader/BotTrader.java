@@ -131,7 +131,9 @@ public class BotTrader {
         if (tradeIndex != -1) {
             split = data.split(" ");
             symbol = split[1];
-            fairV = Integer.parseInt(split[2]);
+            System.out.print(symbol);
+            fairV = Integer.parseInt(split[2]);\
+            System.out.print(fairV);
 
             if (symbol == "BOND") {
                 etfValues[0] = fairV;
@@ -143,7 +145,6 @@ public class BotTrader {
                 etfValues[3] = fairV;
             } else if (symbol == "XLF") {
                 lastXLF = fairV;
-
 
             } else {
                 return -1;
