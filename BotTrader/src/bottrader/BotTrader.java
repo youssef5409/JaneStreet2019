@@ -10,9 +10,7 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 class Configuration {
 
@@ -54,9 +52,17 @@ public class BotTrader {
 
     List<Integer> buyPrices, buySize, sellPrices, sellSize;
 
-    float[] fairValues = new float[7];
+    Map<String, Float> fairValues = new HashMap<>();
+
+    int maxBid;
+    int minAsk;
 
     float fairV;
+
+    String symbol;
+
+    private int orderID = 0;
+
 
     private String data;
 
@@ -76,6 +82,7 @@ public class BotTrader {
     }
 
     private void clearData() {
+        symbol = "";
         buyPrices.clear();
         buySize.clear();
         sellPrices.clear();
@@ -83,14 +90,14 @@ public class BotTrader {
     }
 
 
-    private String readData() {
+    private void readData() {
         int bookIndex = data.indexOf("BOOK");
 
         if (bookIndex != -1) {
             int buyIndex = data.indexOf("BUY");
             int sellIndex = data.indexOf("SELL");
 
-            String symbol = data.substring(buyIndex + 5, sellIndex - 1);
+            symbol = data.substring(buyIndex + 5, sellIndex - 1);
 
             if (!(sellIndex - bookIndex < 4)) {
                 parseInfo(data.substring(buyIndex + 4, sellIndex - 1), buyPrices, buySize);
@@ -103,10 +110,8 @@ public class BotTrader {
                     parseInfo(sellInfo, sellPrices, sellSize);
                 }
             }
-            return symbol;
         }
 
-        return "Error";
     }
 
     private void parseInfo(String info, List<Integer> prices, List<Integer> size) {
@@ -139,25 +144,56 @@ public class BotTrader {
 
     public void trade() {
         try {
-            String symbol;
             while (true) {
 
                 clearData();
 
                 data = from_exchange.readLine().trim();
 
-                symbol = readData();
+                readData();
 
                 fairV = calcFairValue(symbol);
-
-                
-
-
+                fairValues.put(symbol, fairV);
+                buy(fairV);
+                sell(fairV);
             }
 
         } catch (Exception ex) {
             ex.printStackTrace(System.out);
             initConnection(isTesting);
+        }
+
+    }
+
+    private void buy(float fair) {
+
+        if (!sellPrices.isEmpty() || !sellSize.isEmpty()) {
+            for (int ask : sellPrices) {
+                if (ask >= fair) {
+                    break;
+                }
+
+                String send = "ADD " + orderID + " " + symbol + " BUY " + ask + " " + sellSize.get(sellPrices.indexOf(ask));
+                System.out.println("Sending: " + send);
+                to_exchange.println(send);
+                orderID++;
+            }
+        }
+
+    }
+
+    private void sell(float fair) {
+        if (!buyPrices.isEmpty() || !buySize.isEmpty()) {
+            for (int bid : buyPrices) {
+                if (bid >= fair) {
+                    break;
+                }
+
+                String send = "ADD " + orderID + " " + symbol + " SELL " + bid + " " + buySize.get(buyPrices.indexOf(bid));
+                System.out.println("Sending: " + send);
+                to_exchange.println(send);
+                orderID++;
+            }
         }
 
     }
@@ -189,8 +225,8 @@ public class BotTrader {
     }
 
     private float simpleFairValue() {
-        int maxBid = Collections.max(buyPrices);
-        int minAsk = Collections.min(sellPrices);
+        maxBid = Collections.max(buyPrices);
+        minAsk = Collections.min(sellPrices);
 
         return (float) (maxBid + minAsk) / 2;
     }
