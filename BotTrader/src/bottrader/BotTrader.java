@@ -58,6 +58,8 @@ public class BotTrader {
 
     Map<String, Float> fairValues = new HashMap<>();
 
+    float[] etfValues = {-1, -1, -1, -1};
+
     int maxBid;
     int minAsk;
 
@@ -115,7 +117,7 @@ public class BotTrader {
         sellSize.clear();
     }
 
-    private void readData() {
+    private int readData() {
 
 
         int bookIndex = data.indexOf("BOOK");
@@ -126,19 +128,25 @@ public class BotTrader {
 
             symbol = data.substring(bookIndex + 5, buyIndex - 1);
 
-            if (!(sellIndex - bookIndex < 4)) {
-                parseInfo(data.substring(buyIndex + 4, sellIndex), buyPrices, buySize);
-            }
-
-            if (sellIndex + 4 != data.length()) {
-                String sellInfo = data.substring(sellIndex + 5);
-
-                if (sellInfo.length() > 0) {
-                    parseInfo(sellInfo, sellPrices, sellSize);
+            if (symbol == "BOND" || symbol == "GS" || symbol == "MS" || symbol == "WFC") {
+                if (!(sellIndex - bookIndex < 4)) {
+                    parseInfo(data.substring(buyIndex + 4, sellIndex), buyPrices, buySize);
                 }
+
+                if (sellIndex + 4 != data.length()) {
+                    String sellInfo = data.substring(sellIndex + 5);
+
+                    if (sellInfo.length() > 0) {
+                        parseInfo(sellInfo, sellPrices, sellSize);
+                    }
+                }
+            } else {
+                return -1;
             }
+
         }
 
+        return 1;
 
     }
 
@@ -177,14 +185,19 @@ public class BotTrader {
 
                 data = from_exchange.readLine().trim();
 
-                readData();
-
-                switch (symbol) {
-                    case "BOND":
-                        bondStrat();
-                    default:
-
+                if (readData() == -1) {
+                    return;
                 }
+
+                fairV = calcFairValue(symbol);
+                if (symbol == "XLF") {
+                    if (fairV < etfFairV()) {
+                        buy(10);
+                    } else if (fairV > etfFairV()) {
+                        sell(10);
+                    }
+                }
+
             }
 
         } catch (Exception ex) {
@@ -192,6 +205,25 @@ public class BotTrader {
             initConnection(isTesting);
         }
 
+    }
+
+    private void buy(int margin) {
+
+        int price = minAsk - margin;
+
+        String send = "ADD " + orderID + " " + "XLF" + " BUY " + price + " " + 10;
+        System.out.println("Sending: " + send);
+        to_exchange.println(send);
+        orderID++;
+    }
+
+    private void sell(int margin) {
+        int price = maxBid + margin;
+
+        String send = "ADD " + orderID + " " + "XLF" + " SELL " + price + " " + 10;
+        System.out.println("Sending: " + send);
+        to_exchange.println(send);
+        orderID++;
     }
 
     private void bondStrat() {
@@ -249,6 +281,21 @@ public class BotTrader {
         }
 
         return -1;
+    }
+
+    private float etfFairV() {
+        float sum = 0;
+        for (int i = 0; i < 4; i++) {
+            if (etfValues[i] < 0) {
+                return -1;
+            }
+            if (i % 2 == 0) {
+                sum += 3 * etfValues[i];
+            } else {
+                sum += 2 * etfValues[i];
+            }
+        }
+        return sum / 10;
     }
 
     private float simpleFairValue() {
