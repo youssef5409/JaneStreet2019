@@ -48,13 +48,12 @@ public class BotTrader {
     BufferedReader from_exchange;
     PrintWriter to_exchange;
 
-    boolean isTesting = true;
+    boolean isTesting = false;
 
     List<Integer> buyPrices = new ArrayList<>();
     List<Integer> buySize = new ArrayList<>();
     List<Integer> sellPrices = new ArrayList<>();
     List<Integer> sellSize = new ArrayList<>();
-
 
     Map<String, Float> fairValues = new HashMap<>();
 
@@ -67,9 +66,7 @@ public class BotTrader {
 
     private int orderID = 0;
 
-
     private String data;
-
 
     public BotTrader() {
         initConnection(isTesting);
@@ -93,19 +90,14 @@ public class BotTrader {
         sellSize.clear();
     }
 
-
     private void readData() {
         int bookIndex = data.indexOf("BOOK");
 
         if (bookIndex != -1) {
             int buyIndex = data.indexOf("BUY");
-            System.out.println(buyIndex);
             int sellIndex = data.indexOf("SELL");
-            System.out.println(sellIndex);
 
             symbol = data.substring(bookIndex + 5, buyIndex - 1);
-
-            System.out.println(symbol);
 
             if (!(sellIndex - bookIndex < 4)) {
                 parseInfo(data.substring(buyIndex + 4, sellIndex), buyPrices, buySize);
@@ -137,7 +129,9 @@ public class BotTrader {
             }
 
         }
-        tempData.add(Integer.parseInt(temp));
+        if (!"".equals(temp)) {
+            tempData.add(Integer.parseInt(temp));
+        }
 
         for (int i = 0; i < tempData.size(); i++) {
             if (i % 2 == 0) {
@@ -148,7 +142,6 @@ public class BotTrader {
         }
 
     }
-
 
     public void trade() {
         try {
@@ -175,39 +168,32 @@ public class BotTrader {
 
     private void buy(float fair) {
 
-        if (!sellPrices.isEmpty() || !sellSize.isEmpty()) {
-            for (int ask : sellPrices) {
-                if (ask >= fair) {
-                    break;
-                }
-
+        for (int ask : sellPrices) {
+            if (ask < fair) {
                 String send = "ADD " + orderID + " " + symbol + " BUY " + ask + " " + sellSize.get(sellPrices.indexOf(ask));
                 System.out.println("Sending: " + send);
                 to_exchange.println(send);
                 orderID++;
             }
         }
-
     }
 
     private void sell(float fair) {
+
         if (!buyPrices.isEmpty() || !buySize.isEmpty()) {
             for (int bid : buyPrices) {
-                if (bid >= fair) {
-                    break;
+                if (bid > fair) {
+                    String send = "ADD " + orderID + " " + symbol + " SELL " + bid + " " + buySize.get(buyPrices.indexOf(bid));
+                    System.out.println("Sending: " + send);
+                    to_exchange.println(send);
+                    orderID++;
                 }
-
-                String send = "ADD " + orderID + " " + symbol + " SELL " + bid + " " + buySize.get(buyPrices.indexOf(bid));
-                System.out.println("Sending: " + send);
-                to_exchange.println(send);
-                orderID++;
             }
         }
-
     }
 
     private float calcFairValue(String type) {
-        if (!buyPrices.isEmpty() && !sellPrices.isEmpty())
+        if (!buyPrices.isEmpty() && !sellPrices.isEmpty()) {
             switch (type) {
                 case "BOND":
                     return 1000;
@@ -228,6 +214,7 @@ public class BotTrader {
                 default:
                     return -1;
             }
+        }
 
         return -1;
     }
@@ -262,5 +249,3 @@ public class BotTrader {
         }
     }
 }
-
-
