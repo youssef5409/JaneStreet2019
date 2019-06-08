@@ -3,6 +3,8 @@
    2) Compile: javac Bot.java
    3) Run in loop: while true; do java Bot; sleep 1; done
  */
+package bottrader;
+
 import java.lang.*;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
@@ -45,7 +47,12 @@ public class BotTrader {
     public static void main(String[] args) {
         /* The boolean passed to the Configuration constructor dictates whether or not the
            bot is connecting to the prod or test exchange. Be careful with this switch! */
+    }
+
+    void initConnection() {
+
         Configuration config = new Configuration(true);
+
         try {
             Socket skt = new Socket(config.exchange_name(), config.port());
             BufferedReader from_exchange = new BufferedReader(new InputStreamReader(skt.getInputStream()));
