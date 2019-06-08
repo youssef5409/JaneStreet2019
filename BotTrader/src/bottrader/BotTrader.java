@@ -190,13 +190,25 @@ public class BotTrader {
                 }
 
                 fairV = calcFairValue(symbol);
-                if (symbol == "XLF") {
-                    if (fairV < etfFairV()) {
-                        buy(10);
-                    } else if (fairV > etfFairV()) {
-                        sell(10);
-                    }
+                switch (symbol) {
+                    case "BOND":
+                        etfValues[0] = fairV;
+                    case "GS":
+                        etfValues[1] = fairV;
+                    case "MS":
+                        etfValues[2] = fairV;
+                    case "WFC":
+                        etfValues[3] = fairV;
+                    case "XLF":
+                        if (fairV < etfFairV()) {
+                            buy(10);
+                        } else if (fairV > etfFairV()) {
+                            sell(10);
+                        }
+                    default:
+                        break;
                 }
+
 
             }
 
