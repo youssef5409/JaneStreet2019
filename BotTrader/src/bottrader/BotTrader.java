@@ -101,7 +101,7 @@ public class BotTrader {
             int buyIndex = data.indexOf("BUY");
             int sellIndex = data.indexOf("SELL");
 
-            symbol = data.substring(buyIndex + 5, sellIndex - 1);
+            symbol = data.substring(bookIndex + 5, buyIndex - 1);
 
             if (!(sellIndex - bookIndex < 4)) {
                 parseInfo(data.substring(buyIndex + 4, sellIndex - 1), buyPrices, buySize);
