@@ -131,18 +131,22 @@ public class BotTrader {
         if (tradeIndex != -1) {
             split = data.split(" ");
             symbol = split[1];
-            System.out.print(symbol);
-            fairV = Integer.parseInt(split[2]);\
-            System.out.print(fairV);
+            //System.out.print(symbol);
+            fairV = Integer.parseInt(split[2]);
+            //System.out.print(fairV);
 
             if (symbol == "BOND") {
+
                 etfValues[0] = fairV;
             } else if (symbol == "GS") {
                 etfValues[1] = fairV;
+
             } else if (symbol == "MS") {
                 etfValues[2] = fairV;
+
             } else if (symbol == "WFC") {
                 etfValues[3] = fairV;
+
             } else if (symbol == "XLF") {
                 lastXLF = fairV;
 
@@ -235,6 +239,9 @@ public class BotTrader {
                 }
 
                 float calcXLF = etfFairV();
+                System.out.println(calcXLF);
+                System.out.println(lastXLF);
+
                 if (calcXLF < 0 || lastXLF < 0) {
                     return;
                 } else if (calcXLF < lastXLF) {
