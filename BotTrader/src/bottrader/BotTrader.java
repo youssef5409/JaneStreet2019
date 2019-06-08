@@ -135,19 +135,19 @@ public class BotTrader {
             fairV = Integer.parseInt(split[2]);
             //System.out.print(fairV);
 
-            if (symbol == "BOND") {
+            if (symbol.equals("BOND")) {
 
                 etfValues[0] = fairV;
-            } else if (symbol == "GS") {
+            } else if (symbol.equals("GS")) {
                 etfValues[1] = fairV;
 
-            } else if (symbol == "MS") {
+            } else if (symbol.equals("MS")) {
                 etfValues[2] = fairV;
 
-            } else if (symbol == "WFC") {
+            } else if (symbol.equals("WFC")) {
                 etfValues[3] = fairV;
 
-            } else if (symbol == "XLF") {
+            } else if (symbol.equals("XLF")) {
                 lastXLF = fairV;
 
             } else {
